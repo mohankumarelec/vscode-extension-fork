@@ -64,6 +64,9 @@ jobs:
       - name: Checking Linting
         run: npm run lint
 
+      - name: Package Extension
+        run: npm run package
+
       - name: Package extension
         run: vsce package --out "extension.vsix"
 
