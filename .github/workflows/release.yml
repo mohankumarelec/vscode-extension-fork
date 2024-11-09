@@ -12,6 +12,21 @@ jobs:
     name: "Release VS Code Extension"
     runs-on: ubuntu-latest
     environment: production
+    strategy:
+      matrix:
+        platform:
+          [
+            "win32-x64",
+            "win32-arm64",
+            "linux-x64",
+            "linux-arm64",
+            "linux-armhf",
+            "alpine-x64",
+            "darwin-x64",
+            "darwin-arm64",
+            "alpine-arm64",
+          ]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,30 +73,30 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install vsce tool
-        run: npm install -g @vscode/vsce
-
       - name: Checking Linting
         run: npm run lint
 
       - name: Package Extension
         run: npm run package
 
+      - name: Package Extension
+        run: npm run package:prune -- --target ${{ matrix.platform }}
+
       - name: Package extension
-        run: vsce package --out "extension.vsix"
+        run: npx vsce package --target ${{ matrix.platform }} --out "flexpilot-${{ matrix.platform }}.vsix"
 
       - name: Upload extension vsix as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "extension.vsix"
-          path: "extension.vsix"
+          name: "flexpilot-${{ matrix.platform }}.vsix"
+          path: "flexpilot-${{ matrix.platform }}.vsix"
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: extension.vsix
+          files: "flexpilot-${{ matrix.platform }}.vsix"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release to VS Code Marketplace
-        run: vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
+        run: npx vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}

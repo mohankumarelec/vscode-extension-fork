@@ -30,6 +30,46 @@ export const getCompletionModelMetadata = (
 };
 
 /**
+ * Read the contents of a file and return the content and URI of the file
+ * @param {string} fileUri - The URI of the file
+ * @returns {Promise<{ content: string; uri: vscode.Uri } | undefined>} The file content and URI
+ */
+export const fsReadFile = async (
+  fileUri: string,
+): Promise<{ content: string; uri: vscode.Uri } | undefined> => {
+  for (const scheme of ["file", "vscode-local", "vscode-remote"]) {
+    try {
+      const uri = vscode.Uri.file(fileUri).with({ scheme: scheme });
+      const buffer = await vscode.workspace.fs.readFile(uri);
+      return { content: Buffer.from(buffer).toString("utf8"), uri: uri };
+    } catch (error) {
+      logger.warn(`Unable to read ${fileUri} with scheme: ${scheme}`);
+      logger.warn(String(error));
+    }
+  }
+};
+
+/**
+ * Check if a file exists and return the URI of the file if it does
+ * @param {string} fileUri - The URI of the file
+ * @returns {Promise<vscode.Uri | undefined>} The URI of the file
+ */
+export const checkFileExists = async (
+  fileUri: string,
+): Promise<vscode.Uri | undefined> => {
+  for (const scheme of ["file", "vscode-local", "vscode-remote"]) {
+    try {
+      const uri = vscode.Uri.file(fileUri).with({ scheme: scheme });
+      await vscode.workspace.fs.stat(uri);
+      return uri;
+    } catch (error) {
+      logger.warn(`Unable to read ${fileUri} with scheme: ${scheme}`);
+      logger.warn(String(error));
+    }
+  }
+};
+
+/**
  * Get the GitHub session
  * @returns {Promise<vscode.AuthenticationSession>} The GitHub session
  */

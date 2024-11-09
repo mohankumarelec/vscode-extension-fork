@@ -1,15 +1,15 @@
 import {
   CommentJSONValue,
+  CommentObject,
   parse,
   stringify,
-  type CommentObject,
 } from "comment-json";
-import fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { IPackageJson } from "./interfaces";
 import { logger } from "./logger";
 import { storage } from "./storage";
+import { checkFileExists } from "./utilities";
 
 /**
  * Show notification to restart VS Code to apply changes
@@ -91,12 +91,9 @@ const isGitHubCopilotActive = () => {
 /**
  * Checks if the package.json file is outdated and updates it.
  */
-const isPackageJsonOutdated = () => {
+const isPackageJsonOutdated = async () => {
   // Get the path of the package.json file
-  const packageJsonPath = path.join(
-    storage().context.extensionPath,
-    "package.json",
-  );
+  const packageJsonPath = storage().context.asAbsolutePath("package.json");
 
   // Get the loaded package.json content
   const loadedPackageJson = storage().context.extension.packageJSON;
@@ -104,9 +101,16 @@ const isPackageJsonOutdated = () => {
   // Check if the package.json file is outdated
   let isPackageJsonOutdated = false;
 
+  // Check if the package.json file exists
+  const packageJsonUri = await checkFileExists(packageJsonPath);
+  if (!packageJsonUri) {
+    throw new Error("package.json file not found");
+  }
+
   // Parse the package.json content
+  const packageJsonBuffer = await vscode.workspace.fs.readFile(packageJsonUri);
   const packageJson: IPackageJson = JSON.parse(
-    fs.readFileSync(packageJsonPath, "utf-8"),
+    Buffer.from(packageJsonBuffer).toString("utf8"),
   );
 
   if (loadedPackageJson.contributes.menus["scm/inputBox"] === undefined) {
@@ -145,7 +149,10 @@ const isPackageJsonOutdated = () => {
 
   if (isPackageJsonOutdated) {
     // Write the changes to the package.json file
-    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 4));
+    await vscode.workspace.fs.writeFile(
+      packageJsonUri,
+      Buffer.from(JSON.stringify(packageJson, null, 2), "utf8"),
+    );
   }
 
   // Return the flag indicating if the package.json file was updated
@@ -159,6 +166,14 @@ const isArgvJsonOutdated = async () => {
   // Get the path of the argv.json file from storage
   let argvPath = storage().get("argv.path");
   let argvJsonOutdated = false;
+
+  // Check if the argv.json file is outdated and trigger the update
+  if (argvPath) {
+    const argvJsonPath = await checkFileExists(argvPath);
+    if (!argvJsonPath) {
+      argvPath = undefined;
+    }
+  }
 
   if (!argvPath) {
     // Open runtime arguments configuration
@@ -190,8 +205,14 @@ const isArgvJsonOutdated = async () => {
   const extensionId = storage().context.extension.id;
   logger.debug(`Extension ID: ${extensionId}`);
 
+  const argvJsonPath = await checkFileExists(argvPath);
+  if (!argvJsonPath) {
+    throw new Error("argv.json file not found");
+  }
+
   // Parse the argv.json content
-  const argvJson = parse(fs.readFileSync(argvPath, "utf-8")) as CommentObject;
+  const buffer = await vscode.workspace.fs.readFile(argvJsonPath);
+  const argvJson = parse(Buffer.from(buffer).toString("utf8")) as CommentObject;
 
   // Add the extension ID to the "enable-proposed-api" array
   if (Array.isArray(argvJson["enable-proposed-api"])) {
@@ -240,7 +261,10 @@ const isArgvJsonOutdated = async () => {
 
   // If the argv.json file was updated, write the changes
   if (argvJsonOutdated) {
-    fs.writeFileSync(argvPath, stringify(argvJson, null, 4));
+    await vscode.workspace.fs.writeFile(
+      argvJsonPath,
+      Buffer.from(stringify(argvJson, null, 4), "utf8"),
+    );
     logger.info("Successfully updated argv.json");
   }
 
