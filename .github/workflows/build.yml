@@ -45,6 +45,9 @@ jobs:
       - name: Package Extension
         run: npm run package
 
+      - name: Package Extension
+        run: npm run package:prune -- --target ${{ matrix.platform }}
+
       - name: Package extension
         run: npx vsce package --target ${{ matrix.platform }} --out "flexpilot-${{ matrix.platform }}.vsix"
 

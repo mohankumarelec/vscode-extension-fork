@@ -1,6 +1,6 @@
 {
-  "publisher": "flexpilot-test",
-  "name": "flexpilot-test-vscode-extension",
+  "publisher": "flexpilot",
+  "name": "flexpilot-vscode-extension",
   "displayName": "Flexpilot",
   "description": "Open-Source, Native and a True GitHub Copilot Alternative for VS Code",
   "version": "1.95.0",
