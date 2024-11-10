@@ -102,6 +102,7 @@ jobs:
       - name: Release to VS Code Marketplace
         uses: nick-fields/retry@v3
         with:
+          timeout_minutes: 5
           max_attempts: 6
           retry_on: error
           retry_wait_seconds: 10
