@@ -293,10 +293,13 @@ export const updateRuntimeArguments = async () => {
       .showInformationMessage(
         "Flexpilot: Please restart VS Code to apply the latest updates",
         "Restart",
+        "View Logs",
       )
       .then((selection) => {
         if (selection === "Restart") {
           triggerVscodeRestart();
+        } else if (selection === "View Logs") {
+          logger.showOutputChannel();
         }
       });
 
@@ -312,10 +315,13 @@ export const updateRuntimeArguments = async () => {
       .showWarningMessage(
         "To ensure Flexpilot functions correctly, kindly disable GitHub Copilot and reload the window",
         "Reload Window",
+        "View Logs",
       )
       .then((selection) => {
         if (selection === "Reload Window") {
           vscode.commands.executeCommand("workbench.action.reloadWindow");
+        } else if (selection === "View Logs") {
+          logger.showOutputChannel();
         }
       });
 

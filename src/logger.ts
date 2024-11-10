@@ -36,6 +36,13 @@ export class LoggerSingleton extends vscode.Disposable {
   }
 
   /**
+   * Shows the output channel.
+   */
+  public showOutputChannel(): void {
+    this.outputChannel.show();
+  }
+
+  /**
    * Returns the singleton instance of LoggerSingleton.
    * @returns {LoggerSingleton} The singleton instance.
    */
