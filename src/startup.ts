@@ -11,6 +11,34 @@ import { logger } from "./logger";
 import { storage } from "./storage";
 import { checkFileExists } from "./utilities";
 
+const triggerVscodeRestart = async () => {
+  // Get the current value of the titleBarStyle setting
+  const existingValue = vscode.workspace
+    .getConfiguration("window")
+    .get("titleBarStyle");
+
+  // Toggle the value of the titleBarStyle setting
+  await vscode.workspace
+    .getConfiguration("window")
+    .update(
+      "titleBarStyle",
+      existingValue === "native" ? "custom" : "native",
+      vscode.ConfigurationTarget.Global,
+    );
+
+  // Sleep for few milliseconds
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Toggle the value back to the original value
+  await vscode.workspace
+    .getConfiguration("window")
+    .update(
+      "titleBarStyle",
+      existingValue === "native" ? "native" : "custom",
+      vscode.ConfigurationTarget.Global,
+    );
+};
+
 /**
  * Checks if the proposed API is disabled in the current environment.
  */
@@ -261,10 +289,16 @@ export const updateRuntimeArguments = async () => {
   // Notify the user about the required restart
   if (requireRestart) {
     // Show a notification to restart VS Code
-    vscode.window.showInformationMessage(
-      "Flexpilot: Please close and open VS Code completely to apply the latest updates. For MacOS users, make sure to quit completely from the dock and relaunch.",
-      "View Docs",
-    );
+    vscode.window
+      .showInformationMessage(
+        "Flexpilot: Please restart VS Code to apply the latest updates",
+        "Restart",
+      )
+      .then((selection) => {
+        if (selection === "Restart") {
+          triggerVscodeRestart();
+        }
+      });
 
     // Throw an error to stop the execution
     throw new Error("Flexpilot: VS Code restart required");
