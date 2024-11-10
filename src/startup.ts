@@ -12,49 +12,6 @@ import { storage } from "./storage";
 import { checkFileExists } from "./utilities";
 
 /**
- * Show notification to restart VS Code to apply changes
- */
-const triggerVscodeRestart = async () => {
-  // Show a notification to restart VS Code
-  vscode.window
-    .showInformationMessage(
-      "Flexpilot: Please restart VS Code to apply the latest updates.",
-      "Restart",
-    )
-    .then((selection) => {
-      if (selection === "Restart") {
-        triggerVscodeRestart();
-      }
-    });
-
-  // Get the current value of the titleBarStyle setting
-  const existingValue = vscode.workspace
-    .getConfiguration("window")
-    .get("titleBarStyle");
-
-  // Toggle the value of the titleBarStyle setting
-  await vscode.workspace
-    .getConfiguration("window")
-    .update(
-      "titleBarStyle",
-      existingValue === "native" ? "custom" : "native",
-      vscode.ConfigurationTarget.Global,
-    );
-
-  // Sleep for few milliseconds
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Toggle the value back to the original value
-  await vscode.workspace
-    .getConfiguration("window")
-    .update(
-      "titleBarStyle",
-      existingValue === "native" ? "native" : "custom",
-      vscode.ConfigurationTarget.Global,
-    );
-};
-
-/**
  * Checks if the proposed API is disabled in the current environment.
  */
 const isProposedApiDisabled = async () => {
@@ -208,6 +165,7 @@ const isArgvJsonOutdated = async () => {
   const extensionId = storage().context.extension.id;
   logger.debug(`Extension ID: ${extensionId}`);
 
+  // Check if the argv.json file exists
   const argvJsonPath = await checkFileExists(argvPath);
   if (!argvJsonPath) {
     throw new Error("argv.json file not found");
@@ -284,23 +242,29 @@ export const updateRuntimeArguments = async () => {
 
   // Check if the argv.json file is outdated
   if (await isArgvJsonOutdated()) {
+    logger.warn("Updated runtime arguments, restart required");
     requireRestart = true;
   }
 
   // Check if the package.json file is outdated
   if (await isPackageJsonOutdated()) {
+    logger.warn("Updated package.json, restart required");
     requireRestart = true;
   }
 
   // Check if the proposed API is disabled
   if (await isProposedApiDisabled()) {
+    logger.warn("Proposed API is disabled, restart required");
     requireRestart = true;
   }
 
   // Notify the user about the required restart
   if (requireRestart) {
     // Show a notification to restart VS Code
-    await triggerVscodeRestart();
+    vscode.window.showInformationMessage(
+      "Flexpilot: Please close and open VS Code completely to apply the latest updates. For MacOS users, make sure to quit completely from the dock and relaunch.",
+      "View Docs",
+    );
 
     // Throw an error to stop the execution
     throw new Error("Flexpilot: VS Code restart required");
@@ -308,6 +272,7 @@ export const updateRuntimeArguments = async () => {
 
   // Check if GitHub Copilot is active
   if (isGitHubCopilotActive()) {
+    logger.warn("GitHub Copilot is active");
     // Notify the user about GitHub Copilot compatibility
     vscode.window
       .showWarningMessage(

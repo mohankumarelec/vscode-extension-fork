@@ -33,7 +33,7 @@ const extensionConfig = {
         test: /\.node$/,
         use: [
           {
-            loader: "file-loader",
+            loader: "node-loader",
             options: { name: "[name].[ext]" },
           },
         ],
