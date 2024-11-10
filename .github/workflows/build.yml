@@ -13,6 +13,7 @@ jobs:
     name: "Build VS Code Extension"
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         platform:
           [
