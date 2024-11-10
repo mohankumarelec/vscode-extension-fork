@@ -9,6 +9,7 @@ import { logger } from "./logger";
 interface IKeyValueStore {
   "github.support": boolean;
   "completions.disabled.languages": string[];
+  "fs.scheme": string;
   "argv.path": string;
 }
 

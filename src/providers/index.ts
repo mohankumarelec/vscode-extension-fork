@@ -133,10 +133,9 @@ export class ModelProviderManager {
       }
 
       // Create and set the new provider
-      this.modelProviders.set(
-        locationName,
-        new ModelProvider(usagePreference.nickname),
-      );
+      const modelProvider = new ModelProvider(usagePreference.nickname);
+      await modelProvider.initialize();
+      this.modelProviders.set(locationName, modelProvider);
       logger.info(
         `Provider updated successfully for location: ${locationName}`,
       );

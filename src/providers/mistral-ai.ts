@@ -95,7 +95,7 @@ export class MistralAICompletionModelProvider extends ICompletionModelProvider {
   static readonly providerId = "mistral-completion";
   static readonly providerName = "Mistral AI";
   static readonly providerType = "completion" as const;
-  private readonly tokenizer: Tokenizer;
+  private tokenizer!: Tokenizer;
   public readonly config: IMistralAICompletionModelConfig;
 
   /**
@@ -114,10 +114,17 @@ export class MistralAICompletionModelProvider extends ICompletionModelProvider {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
     this.config = config;
-    this.tokenizer = Tokenizers.get(this.config.model);
     logger.debug(
       `MistralAICompletionModelProvider initialized for ${nickname}`,
     );
+  }
+
+  /**
+   * Initializes the OpenAI model provider.
+   * @returns {Promise<void>} A promise that resolves when the provider is initialized.
+   */
+  async initialize(): Promise<void> {
+    this.tokenizer = await Tokenizers.get(this.config.model);
   }
 
   /**

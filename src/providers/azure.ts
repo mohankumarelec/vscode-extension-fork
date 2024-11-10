@@ -95,7 +95,7 @@ export class AzureOpenAICompletionModelProvider extends ICompletionModelProvider
   static readonly providerName = "Azure OpenAI";
   static readonly providerId = "azure-openai-completion";
   static readonly providerType = "completion" as const;
-  private readonly tokenizer: Tokenizer;
+  private tokenizer!: Tokenizer;
   public readonly config: IAzureOpenAICompletionModelConfig;
 
   /**
@@ -114,10 +114,17 @@ export class AzureOpenAICompletionModelProvider extends ICompletionModelProvider
       throw new Error(`Model configuration not found for ${nickname}`);
     }
     this.config = config;
-    this.tokenizer = Tokenizers.get(this.config.model);
     logger.debug(
       `AzureOpenAICompletionModelProvider initialized for ${nickname}`,
     );
+  }
+
+  /**
+   * Initializes the OpenAI model provider.
+   * @returns {Promise<void>} A promise that resolves when the provider is initialized.
+   */
+  async initialize(): Promise<void> {
+    this.tokenizer = await Tokenizers.get(this.config.model);
   }
 
   /**

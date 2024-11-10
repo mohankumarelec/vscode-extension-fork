@@ -107,6 +107,9 @@ const isPackageJsonOutdated = async () => {
     throw new Error("package.json file not found");
   }
 
+  // Set the fs scheme in storage
+  storage().set("fs.scheme", packageJsonUri.scheme);
+
   // Parse the package.json content
   const packageJsonBuffer = await vscode.workspace.fs.readFile(packageJsonUri);
   const packageJson: IPackageJson = JSON.parse(

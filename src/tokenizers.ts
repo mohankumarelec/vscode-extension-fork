@@ -2,9 +2,9 @@ import { Tokenizer } from "@flexpilot-ai/tokenizers";
 import assert from "assert";
 import axios from "axios";
 import { createHash } from "crypto";
-import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
+import { logger } from "./logger";
 import { storage } from "./storage";
 import { getCompletionModelMetadata } from "./utilities";
 
@@ -12,9 +12,14 @@ export class Tokenizers {
   /**
    * Get the tokenizer metadata for the given model.
    * @param {string} model - The name of the model.
-   * @returns {Object} The tokenizer metadata.
    */
-  private static metadata(model: string) {
+  private static async metadata(model: string) {
+    // Get the file system scheme from storage
+    const scheme = storage().get("fs.scheme");
+    if (!scheme) {
+      throw new Error("No scheme found in storage");
+    }
+
     // Get the configuration for the model
     const metadata = getCompletionModelMetadata(model);
 
@@ -25,32 +30,39 @@ export class Tokenizers {
 
     // Prepare the tokenizer file path
     const basePath = storage().context.globalStorageUri.fsPath;
-    let fileId = metadata.tokenizerUrl.split("/").pop();
-    const tokenizersFolder = path.join(basePath, "tokenizers");
-    if (!fileId) {
-      fileId = createHash("sha512").update(model).digest("hex");
-    }
-    const jsonPath = path.join(tokenizersFolder, fileId);
+    const fileId = createHash("sha512")
+      .update(metadata.tokenizerUrl)
+      .digest("hex");
+    const tokenizerUri = vscode.Uri.from({
+      scheme: scheme,
+      path: path.join(basePath, "tokenizers", fileId),
+    });
 
     // Check if the tokenizer folder exists in storage
-    if (!fs.existsSync(tokenizersFolder)) {
-      fs.mkdirSync(tokenizersFolder, { recursive: true });
+    const tokenizerFolder = vscode.Uri.from({
+      scheme: scheme,
+      path: path.join(basePath, "tokenizers"),
+    });
+    try {
+      await vscode.workspace.fs.stat(tokenizerFolder);
+    } catch (error) {
+      logger.warn(`Folder not found at: ${tokenizerFolder}`);
+      logger.error(error as Error);
+      vscode.workspace.fs.createDirectory(tokenizerFolder);
     }
 
     // Return the metadata and the path to the tokenizer file
-    return { metadata, jsonPath };
+    return { metadata, tokenizerUri };
   }
 
   /**
    * Get the tokenizer for the given model.
    * @param {string} model - The name of the model.
-   * @returns {Tokenizer} The tokenizer object.
    */
-  public static get(model: string): Tokenizer {
-    const { jsonPath } = this.metadata(model);
-    const data = fs.readFileSync(jsonPath);
-    const byteArray = Array.from(new Uint8Array(data));
-    return new Tokenizer(byteArray);
+  public static async get(model: string): Promise<Tokenizer> {
+    const { tokenizerUri } = await this.metadata(model);
+    const data = await vscode.workspace.fs.readFile(tokenizerUri);
+    return new Tokenizer(Array.from(data));
   }
 
   /**
@@ -59,7 +71,7 @@ export class Tokenizers {
    * @returns {Promise<Tokenizer>} The tokenizer object.
    */
   public static async download(model: string): Promise<Tokenizer> {
-    const { metadata, jsonPath } = this.metadata(model);
+    const { metadata, tokenizerUri } = await this.metadata(model);
     const response = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -78,7 +90,10 @@ export class Tokenizers {
     const byteArray = Array.from(new Uint8Array(response.data));
     const tokenizer = new Tokenizer(byteArray);
     assert(tokenizer.encode("test string", false).length > 0);
-    fs.writeFileSync(jsonPath, response.data, "utf8");
+    await vscode.workspace.fs.writeFile(
+      tokenizerUri,
+      new Uint8Array(response.data),
+    );
     return tokenizer;
   }
 }
