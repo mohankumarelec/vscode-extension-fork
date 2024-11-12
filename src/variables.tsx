@@ -1,7 +1,6 @@
 import { CoreUserMessage } from "ai";
 import { basename } from "path";
 import * as vscode from "vscode";
-import { eventsManager } from "./events";
 import { logger } from "./logger";
 import {
   Code,
@@ -9,6 +8,7 @@ import {
   jsxToMarkdown,
   Message,
 } from "./prompts/jsx-utilities";
+import { storage } from "./storage";
 import { getLanguageConfig, getTerminalType } from "./utilities";
 
 /**
@@ -17,9 +17,12 @@ import { getLanguageConfig, getTerminalType } from "./utilities";
  */
 export class VariablesManager {
   private static instance: VariablesManager;
-  private readonly disposables: vscode.Disposable[] = [];
+  private lastTerminalExecutedCommand:
+    | vscode.TerminalExecutedCommand
+    | undefined;
 
   private constructor() {
+    // Define the chat variables and their resolvers
     const chatVariables = [
       {
         name: "editor",
@@ -55,8 +58,11 @@ export class VariablesManager {
       },
     ];
     logger.info("Registering chat variable resolvers");
+
+    // Register the chat variable resolvers
     for (const variable of chatVariables) {
-      this.disposables.push(
+      logger.debug(`Registering chat variable: ${variable.name}`);
+      storage().context.subscriptions.push(
         vscode.chat.registerChatVariableResolver(
           `flexpilot.${variable.name}`,
           variable.name,
@@ -91,6 +97,18 @@ export class VariablesManager {
         ),
       );
     }
+
+    // Register the terminal command execution event listener
+    storage().context.subscriptions.push(
+      vscode.window.onDidExecuteTerminalCommand(
+        (event: vscode.TerminalExecutedCommand) => {
+          logger.debug(`Terminal command executed: ${event.commandLine}`);
+          this.lastTerminalExecutedCommand = event;
+        },
+      ),
+    );
+
+    // Log the registration of chat variable resolvers
     logger.info("Chat variable resolvers registered");
   }
 
@@ -102,14 +120,6 @@ export class VariablesManager {
       VariablesManager.instance = new VariablesManager();
       logger.debug("New VariablesManager instance created");
     }
-  }
-
-  /**
-   * Disposes of all registered disposables.
-   */
-  public dispose(): void {
-    this.disposables.forEach((item) => item.dispose());
-    logger.info("VariablesManager disposed");
   }
 
   /**
@@ -252,32 +262,37 @@ export class VariablesManager {
    */
   private getTerminalLastCommandPrompt(): JSX.Element {
     logger.info("Getting terminal last command prompt");
-    const event = eventsManager().getLastTerminalExecutedCommand();
-    if (!event) {
+    if (!this.lastTerminalExecutedCommand) {
       throw new Error("No last terminal shell execution found");
     }
-    const terminalType = getTerminalType(event.terminal);
+    const terminalType = getTerminalType(
+      this.lastTerminalExecutedCommand.terminal,
+    );
     logger.debug("Terminal last command prompt generated");
     return (
       <Message role="user">
         <h1>TERMINAL LAST COMMAND CONTEXT</h1>
-        {event.commandLine && (
+        {this.lastTerminalExecutedCommand.commandLine && (
           <>
             <br />
             The following is the last command run in the terminal:
             <br />
-            <Code language={terminalType}>{event.commandLine}</Code>
+            <Code language={terminalType}>
+              {this.lastTerminalExecutedCommand.commandLine}
+            </Code>
           </>
         )}
-        {event.cwd && (
+        {this.lastTerminalExecutedCommand.cwd && (
           <>
             <br />
             It was run in the directory:
             <br />
-            <Code language={terminalType}>{event.cwd.toString()}</Code>
+            <Code language={terminalType}>
+              {this.lastTerminalExecutedCommand.cwd.toString()}
+            </Code>
           </>
         )}
-        {event.terminal && (
+        {this.lastTerminalExecutedCommand.terminal && (
           <>
             <br />
             It was run using shell type:
@@ -285,12 +300,14 @@ export class VariablesManager {
             <Code language={terminalType}>{terminalType}</Code>
           </>
         )}
-        {event.output && (
+        {this.lastTerminalExecutedCommand.output && (
           <>
             <br />
             It has the following output:
             <br />
-            <Code language={terminalType}>{event.output}</Code>
+            <Code language={terminalType}>
+              {this.lastTerminalExecutedCommand.output}
+            </Code>
           </>
         )}
       </Message>

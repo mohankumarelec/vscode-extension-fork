@@ -12,6 +12,8 @@ interface IKeyValueStore {
   "argv.path": string;
 }
 
+type IAllowedSecrets = "lastProviderUpdatedAt";
+
 /**
  * IWorkspaceConfigKeys type to define the keys of workspace configuration.
  */
@@ -75,6 +77,22 @@ export class StorageManager {
   ): Promise<void> => {
     logger.debug(`Setting global state for key: ${key}`);
     return this.context.globalState.update(key, value);
+  };
+
+  public secrets = {
+    /**
+     * Retrieves the key from the secret storage.
+     */
+    get: async (key: IAllowedSecrets): Promise<string | undefined> => {
+      return await this.context.secrets.get(key);
+    },
+
+    /**
+     * Sets the key and value in the secret storage.
+     */
+    set: async (key: IAllowedSecrets, value: string) => {
+      await this.context.secrets.store(key, value);
+    },
   };
 
   public session = {

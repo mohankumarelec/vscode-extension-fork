@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { LOCATIONS, PROVIDER_TYPES } from "../constants";
 import { ILocationName, IModelType } from "../interfaces";
 import { logger } from "../logger";
-import { ModelProviderManager, ModelProviders } from "../providers";
+import { ModelProviders } from "../providers";
 import { storage } from "../storage";
 
 /**
@@ -284,7 +284,8 @@ export class ConfigureModelCommand extends vscode.Disposable {
         `Model \`${pickedModel.label}\` is successfully set to be used in \`${pickedLocation.label}\``,
       );
     }
-    await ModelProviderManager.getInstance().initProviders();
+    // Reinitialize the model providers
+    await storage().secrets.set("lastProviderUpdatedAt", Date.now().toString());
   }
 
   /**
@@ -398,8 +399,10 @@ export class ConfigureModelCommand extends vscode.Disposable {
         nickname: nickname,
         locationName: pickedLocation.label,
       });
-      await ModelProviderManager.getInstance().initProviders();
     }
+
+    // Reinitialize the model providers
+    await storage().secrets.set("lastProviderUpdatedAt", Date.now().toString());
 
     // Set the context to indicate successful configuration for walkthroughs
     await vscode.commands.executeCommand(
@@ -444,7 +447,8 @@ export class ConfigureModelCommand extends vscode.Disposable {
       return;
     }
 
-    await ModelProviderManager.getInstance().initProviders();
+    // Reinitialize the model providers
+    await storage().secrets.set("lastProviderUpdatedAt", Date.now().toString());
     logger.notifyInfo(`Updated \`${nickname}\` configuration successfully`);
   }
 
@@ -478,7 +482,10 @@ export class ConfigureModelCommand extends vscode.Disposable {
         }
       }
       // Reinitialize the model providers
-      await ModelProviderManager.getInstance().initProviders();
+      await storage().secrets.set(
+        "lastProviderUpdatedAt",
+        Date.now().toString(),
+      );
       logger.notifyInfo(`Deleted model configuration: \`${nickname}\``);
     } else {
       logger.info(
