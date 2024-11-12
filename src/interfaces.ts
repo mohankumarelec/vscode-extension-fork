@@ -68,6 +68,11 @@ abstract class IModelProviderBase {
 
   abstract config: IModelConfig;
 
+  // Use this method only for async initialization, else use constructor
+  async initialize(): Promise<void> {
+    return Promise.resolve();
+  }
+
   static configure(nickname: string): Promise<void> {
     throw new Error(`Method not implemented for ${nickname}`);
   }

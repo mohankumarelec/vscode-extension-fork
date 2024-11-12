@@ -30,6 +30,20 @@ export const getCompletionModelMetadata = (
 };
 
 /**
+ * Check if a file exists and return a boolean
+ * @param {string} fileUri - The URI of the file
+ */
+export const isFileExists = async (fileUri: vscode.Uri): Promise<boolean> => {
+  try {
+    return !!(await vscode.workspace.fs.stat(fileUri));
+  } catch (error) {
+    logger.warn(String(error));
+    logger.warn(`checkFileExists: ${fileUri} File not found`);
+  }
+  return false;
+};
+
+/**
  * Get the GitHub session
  * @returns {Promise<vscode.AuthenticationSession>} The GitHub session
  */

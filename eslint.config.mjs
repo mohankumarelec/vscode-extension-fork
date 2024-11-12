@@ -10,4 +10,24 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
+  {
+    ignores: ["node_modules/**", "build/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "fs",
+              message: "Please use vscode.workspace.fs",
+            },
+            {
+              name: "fs/promises",
+              message: "Please use vscode.workspace.fs",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];

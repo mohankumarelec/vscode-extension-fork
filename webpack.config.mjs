@@ -13,6 +13,7 @@ const extensionConfig = {
     // the bundle is stored in the 'out' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(path.dirname(new URL(import.meta.url).pathname), "out"),
     filename: "extension.js",
+    clean: true,
     libraryTarget: "commonjs2",
   },
   externals: {
@@ -30,7 +31,12 @@ const extensionConfig = {
     rules: [
       {
         test: /\.node$/,
-        loader: "node-loader",
+        use: [
+          {
+            loader: "node-loader",
+            options: { name: "[name].[ext]" },
+          },
+        ],
       },
       {
         test: /\.(ts|tsx)$/,

@@ -19,6 +19,21 @@ import { VariablesManager } from "./variables";
  * Activates the extension.
  */
 export async function activate(context: vscode.ExtensionContext) {
+  // log system information
+  logger.info("VS Code Version:", vscode.version);
+  logger.info("Node Version:", process.version);
+  logger.info("Platform:", process.platform);
+  logger.info("CPU Architecture:", process.arch);
+  logger.info("Extension ID:", context.extension.id);
+  logger.info("Extension Version:", context.extension.packageJSON.version);
+  logger.info("Extension Path:", context.extension.extensionPath);
+  (vscode.workspace.workspaceFolders || []).forEach((folder) => {
+    logger.info("Workspace Name:", folder.name);
+    logger.info("Workspace URI:", folder.uri.toString());
+  });
+  logger.info("Environment Variables:", process.env);
+
+  // set initial values to context variables
   setContext("isLoaded", false);
   setContext("isError", false);
   setContext("isLoggedIn", false);
