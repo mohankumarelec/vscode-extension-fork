@@ -64,7 +64,7 @@ class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
     _context: vscode.InlineCompletionContext,
     token: vscode.CancellationToken,
   ): Promise<vscode.InlineCompletionList> {
-    if (statusIcon().state === "disabled") {
+    if (statusIcon.state === "disabled") {
       logger.debug("Inline completions disabled");
       return new vscode.InlineCompletionList([]);
     }
@@ -76,11 +76,11 @@ class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
     return await new Promise<vscode.InlineCompletionList>((resolve) => {
       logger.debug("Debouncing completion request");
       const abortController = new AbortController();
-      statusIcon().reset();
+      statusIcon.reset();
       const timeoutId = setTimeout(async () => {
         try {
           logger.debug("Generating completions");
-          statusIcon().setLoading();
+          statusIcon.setLoading();
           const completions = await this.generateCompletions(
             document,
             position,
@@ -95,13 +95,13 @@ class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
           }
           resolve(new vscode.InlineCompletionList([]));
         } finally {
-          statusIcon().reset();
+          statusIcon.reset();
         }
-      }, storage().workspace.get<number>("flexpilot.completions.debounceWait"));
+      }, storage.workspace.get<number>("flexpilot.completions.debounceWait"));
 
       token.onCancellationRequested(() => {
         clearTimeout(timeoutId);
-        statusIcon().reset();
+        statusIcon.reset();
         abortController.abort();
         logger.debug("Completion request cancelled");
       });
@@ -121,7 +121,7 @@ class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
     abortController: AbortController,
   ): Promise<vscode.InlineCompletionList> {
     logger.debug("Generating completions");
-    const config = storage().get("completions.disabled.languages") || [];
+    const config = storage.get("completions.disabled.languages") || [];
     const languageId = document.languageId;
     if (config.includes(languageId)) {
       logger.debug(`Language ${languageId} is disabled for completions`);
@@ -184,7 +184,7 @@ class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
     // Truncate prefix or suffix if it exceeds the context window
     const maxPrefixLength =
       Math.floor(
-        storage().workspace.get<number>(
+        storage.workspace.get<number>(
           "flexpilot.completions.contextPrefixWeight",
         ) * promptTokenLimit,
       ) - headerTokens.length;
@@ -239,7 +239,7 @@ class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
       maxTokens: this.maxOutputTokens,
       stop: stop,
       signal: abortController.signal,
-      temperature: storage().workspace.get<number>(
+      temperature: storage.workspace.get<number>(
         "flexpilot.completions.temperature",
       ),
       messages: {

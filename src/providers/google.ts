@@ -46,7 +46,7 @@ export class GoogleChatModelProvider extends IChatModelProvider {
       `Initializing GoogleChatModelProvider with nickname: ${nickname}`,
     );
     const config =
-      storage().models.get<IGoogleGenerativeAIChatModelConfig>(nickname);
+      storage.models.get<IGoogleGenerativeAIChatModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -65,7 +65,7 @@ export class GoogleChatModelProvider extends IChatModelProvider {
     );
 
     const config =
-      storage().models.get<IGoogleGenerativeAIChatModelConfig>(nickname);
+      storage.models.get<IGoogleGenerativeAIChatModelConfig>(nickname);
 
     // Prompt user for API key
     let apiKey = await vscode.window.showInputBox({
@@ -158,7 +158,7 @@ export class GoogleChatModelProvider extends IChatModelProvider {
     );
 
     // Save the selected model configuration
-    await storage().models.set<IGoogleGenerativeAIChatModelConfig>(nickname, {
+    await storage.models.set<IGoogleGenerativeAIChatModelConfig>(nickname, {
       baseUrl: baseUrl,
       apiKey: apiKey,
       model: model.label,

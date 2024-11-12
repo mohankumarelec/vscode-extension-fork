@@ -6,22 +6,20 @@ import { storage } from "../storage";
  * GithubSignInCommand class manages the GitHub sign-in functionality.
  * It implements the Singleton pattern to ensure a single instance across the application.
  */
-export class GithubSignInCommand extends vscode.Disposable {
+export class GithubSignInCommand {
   private static instance: GithubSignInCommand;
-  private readonly disposable: vscode.Disposable;
 
   /**
    * Private constructor to prevent direct instantiation.
    * Registers the command and initializes the disposable.
    */
-  private constructor() {
-    // Call the parent constructor
-    super(() => this.disposable.dispose());
-
+  private constructor(extensionContext = storage.getContext()) {
     // Register the command
-    this.disposable = vscode.commands.registerCommand(
-      "flexpilot.github.signin",
-      this.handler.bind(this),
+    extensionContext.subscriptions.push(
+      vscode.commands.registerCommand(
+        "flexpilot.github.signin",
+        this.handler.bind(this),
+      ),
     );
     logger.info("GithubSignInCommand instance created");
   }
@@ -33,7 +31,6 @@ export class GithubSignInCommand extends vscode.Disposable {
   public static register() {
     if (!GithubSignInCommand.instance) {
       GithubSignInCommand.instance = new GithubSignInCommand();
-      storage().context.subscriptions.push(GithubSignInCommand.instance);
       logger.debug("New GithubSignInCommand instance created");
     }
   }
@@ -46,7 +43,7 @@ export class GithubSignInCommand extends vscode.Disposable {
     try {
       logger.info("Handling `GithubSignInCommand`");
       // Check if the user has already accepted GitHub support
-      const githubSupportStatus = storage().get("github.support");
+      const githubSupportStatus = storage.get("github.support");
 
       if (!githubSupportStatus) {
         const shouldSupport = await this.promptForGithubSupport();
@@ -55,7 +52,7 @@ export class GithubSignInCommand extends vscode.Disposable {
             shouldSupport ? "support" : "not support"
           } the project with a GitHub star`,
         );
-        await storage().set("github.support", shouldSupport);
+        await storage.set("github.support", shouldSupport);
       }
 
       await vscode.authentication.getSession("github", ["public_repo"], {

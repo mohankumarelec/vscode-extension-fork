@@ -39,7 +39,7 @@ export class GenericChatModelProvider extends IChatModelProvider {
     logger.debug(
       `Initializing GenericChatModelProvider with nickname: ${nickname}`,
     );
-    const config = storage().models.get<IGenericChatModelConfig>(nickname);
+    const config = storage.models.get<IGenericChatModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -56,7 +56,7 @@ export class GenericChatModelProvider extends IChatModelProvider {
   static readonly configure = async (nickname: string): Promise<void> => {
     logger.info(`Configuring Generic chat model with nickname: ${nickname}`);
 
-    const config = storage().models.get<IGenericChatModelConfig>(nickname);
+    const config = storage.models.get<IGenericChatModelConfig>(nickname);
 
     // Prompt user for base URL
     logger.debug("Prompting user for base URL");
@@ -168,7 +168,7 @@ export class GenericChatModelProvider extends IChatModelProvider {
 
     // Save the model configuration
     logger.info(`Saving model configuration for: ${nickname}`);
-    await storage().models.set<IGenericChatModelConfig>(nickname, {
+    await storage.models.set<IGenericChatModelConfig>(nickname, {
       baseUrl: baseUrl,
       apiKey: apiKey,
       model: model,

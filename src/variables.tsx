@@ -21,7 +21,7 @@ export class VariablesManager {
     | vscode.TerminalExecutedCommand
     | undefined;
 
-  private constructor() {
+  private constructor(extensionContext = storage.getContext()) {
     // Define the chat variables and their resolvers
     const chatVariables = [
       {
@@ -62,7 +62,7 @@ export class VariablesManager {
     // Register the chat variable resolvers
     for (const variable of chatVariables) {
       logger.debug(`Registering chat variable: ${variable.name}`);
-      storage().context.subscriptions.push(
+      extensionContext.subscriptions.push(
         vscode.chat.registerChatVariableResolver(
           `flexpilot.${variable.name}`,
           variable.name,
@@ -100,7 +100,7 @@ export class VariablesManager {
 
     // Register the terminal command execution event listener
     logger.debug("Registering terminal command execution event listener");
-    storage().context.subscriptions.push(
+    extensionContext.subscriptions.push(
       vscode.window.onDidExecuteTerminalCommand(
         (event: vscode.TerminalExecutedCommand) => {
           logger.debug(`Terminal command executed: ${event.commandLine}`);

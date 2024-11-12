@@ -27,16 +27,15 @@ export class EventsSingleton {
   /**
    * Creates a new instance of EventsSingleton.
    */
-  private constructor() {
-    // Get the extension context
-    const extContext = storage().context;
-
+  private constructor(
+    private readonly extensionContext = storage.getContext(),
+  ) {
     // Listen for changes in the secrets storage to fire events
-    extContext.subscriptions.push(
-      extContext.secrets.onDidChange(async (event) => {
+    extensionContext.subscriptions.push(
+      extensionContext.secrets.onDidChange(async (event) => {
         if (event.key.startsWith(EVENT_KEY_PREFIX)) {
           logger.debug(`Event received: ${event.key}`);
-          const payload = await extContext.secrets.get(event.key);
+          const payload = await extensionContext.secrets.get(event.key);
           if (payload) {
             logger.debug(`Event payload: ${JSON.stringify(payload)}`);
             this.eventEmitter.fire(JSON.parse(payload));
@@ -68,7 +67,7 @@ export class EventsSingleton {
     logger.debug(
       `Firing event: ${event.name} with payload: ${JSON.stringify(event.payload)}`,
     );
-    await storage().context.secrets.store(
+    await this.extensionContext.secrets.store(
       `${EVENT_KEY_PREFIX}${event.name}`,
       JSON.stringify(event),
     );
@@ -77,8 +76,8 @@ export class EventsSingleton {
   /**
    * Event that is fired when an event is emitted.
    */
-  public event = this.eventEmitter.event;
+  public onFire = this.eventEmitter.event;
 }
 
 // Export a singleton instance of the events
-export const events = () => EventsSingleton.getInstance();
+export const events = EventsSingleton.getInstance();

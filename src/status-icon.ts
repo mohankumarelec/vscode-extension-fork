@@ -7,20 +7,19 @@ import { storage } from "./storage";
  * Status icon manager to handle the status icon and state.
  * Created as a singleton to ensure a single instance across the application.
  */
-class StatusIconManager extends vscode.Disposable {
+class StatusIconManager {
   private static instance: StatusIconManager;
   private readonly statusBarItem: vscode.StatusBarItem;
   public state: "enabled" | "disabled" = "enabled";
 
-  private constructor() {
-    // Call the parent constructor
-    super(() => this.statusBarItem.dispose());
-
+  private constructor(extensionContext = storage.getContext()) {
     // Create the status bar item
     logger.info("StatusIconManager instance created");
     this.statusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right,
     );
+
+    extensionContext.subscriptions.push(this.statusBarItem);
 
     // Initialize the status bar item
     this.initializeStatusBar();
@@ -38,7 +37,6 @@ class StatusIconManager extends vscode.Disposable {
     if (!StatusIconManager.instance) {
       // Create a new instance if not already created
       StatusIconManager.instance = new StatusIconManager();
-      storage().context.subscriptions.push(StatusIconManager.instance);
       logger.debug("New StatusIconManager instance created");
     }
     return StatusIconManager.instance;
@@ -88,7 +86,7 @@ class StatusIconManager extends vscode.Disposable {
       logger.debug("No provider found, setting status to disabled");
       return false;
     }
-    const config = storage().get("completions.disabled.languages") || [];
+    const config = storage.get("completions.disabled.languages") || [];
     if (config.includes(editor.document.languageId)) {
       logger.debug("Language disabled, setting status to disabled");
       return false;
@@ -119,4 +117,4 @@ class StatusIconManager extends vscode.Disposable {
 }
 
 // Export the StatusIconManager instance
-export const statusIcon = () => StatusIconManager.getInstance();
+export const statusIcon = StatusIconManager.getInstance();

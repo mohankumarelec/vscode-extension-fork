@@ -16,11 +16,10 @@ export class LoggerSingleton extends vscode.Disposable {
   private constructor() {
     // Call the parent constructor
     super(() => {
-      // Dispose the command registration
-      this.disposable.dispose();
-
       // Dispose the output channel
       this.outputChannel.dispose();
+      // Dispose the command registration
+      this.disposable.dispose();
     });
 
     // Create the output channel
@@ -127,7 +126,7 @@ axios.interceptors.request.use(
       headers: config.headers,
       url: config.url,
       method: config.method,
-      data: config.data,
+      data: Buffer.isBuffer(config.data) ? "<Buffer>" : config.data,
       baseURL: config.baseURL,
     });
     return config;
@@ -145,7 +144,7 @@ axios.interceptors.response.use(
     // Log the response details and return the response
     logger.debug("Axios Response:", {
       status: response.status,
-      data: response.data,
+      data: Buffer.isBuffer(response.data) ? "<Buffer>" : response.data,
       headers: response.headers,
     });
     return response;
@@ -155,7 +154,9 @@ axios.interceptors.response.use(
       // The request was made and the server responded with a status code
       logger.error("Axios Error:", {
         status: error.response.status,
-        data: error.response.data,
+        data: Buffer.isBuffer(error.response.data)
+          ? "<Buffer>"
+          : error.response.data,
         headers: error.response.headers,
       });
     } else if (error.request) {

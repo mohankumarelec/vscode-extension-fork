@@ -17,9 +17,18 @@ export class SessionManager extends vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = [];
   private static instance: SessionManager;
 
-  private constructor() {
+  private constructor(
+    private readonly extensionContext = storage.getContext(),
+  ) {
     // Call the parent constructor
-    super(() => this.dispose());
+    super(() => {
+      this.disposables.forEach((disposable) => disposable.dispose());
+      this.disposeSessionFeatures();
+      logger.info("Session manager disposed");
+    });
+
+    // Register the session manager
+    extensionContext.subscriptions.push(this);
 
     // Handle the session change
     this.disposables.push(
@@ -38,7 +47,6 @@ export class SessionManager extends vscode.Disposable {
   public static async register() {
     if (!SessionManager.instance) {
       SessionManager.instance = new SessionManager();
-      storage().context.subscriptions.push(SessionManager.instance);
       SessionManager.instance.handleSessionChange();
       logger.debug("New SessionManager instance created");
     }
@@ -51,7 +59,7 @@ export class SessionManager extends vscode.Disposable {
     const session = await vscode.authentication.getSession("github", [
       "public_repo",
     ]);
-    storage().session.set(session);
+    storage.session.set(session);
     setContext("isLoggedIn", !!session);
     if (session) {
       this.handleActiveSession();
@@ -76,7 +84,7 @@ export class SessionManager extends vscode.Disposable {
    */
   private async handleActiveSession(): Promise<void> {
     logger.info("GitHub session established");
-    if (await storage().get("github.support")) {
+    if (await storage.get("github.support")) {
       this.starGitHubRepository();
     } else {
       this.showGithubSupportNotification();
@@ -89,9 +97,9 @@ export class SessionManager extends vscode.Disposable {
    * Clears the global state.
    */
   private async clearGlobalState(): Promise<void> {
-    const keys = storage().context.globalState.keys();
+    const keys = this.extensionContext.globalState.keys();
     for (const key of keys) {
-      await storage().context.globalState.update(key, undefined);
+      await this.extensionContext.globalState.update(key, undefined);
     }
     logger.debug("Global state cleared");
   }
@@ -124,7 +132,7 @@ export class SessionManager extends vscode.Disposable {
       )
       .then(async (support) => {
         if (support === "Yes (recommended)") {
-          storage().set("github.support", true);
+          storage.set("github.support", true);
           this.starGitHubRepository().then(() => this.showSponsorPrompt());
         }
       });
@@ -151,7 +159,7 @@ export class SessionManager extends vscode.Disposable {
    */
   private async starGitHubRepository(): Promise<void> {
     try {
-      const githubSession = storage().session.get();
+      const githubSession = storage.session.get();
       if (!githubSession) {
         return;
       }
@@ -194,14 +202,5 @@ export class SessionManager extends vscode.Disposable {
       logger.error(error as Error);
       logger.notifyError(`Failed to register session features: ${error}`);
     }
-  }
-
-  /**
-   * Disposes of the SessionManager and its resources.
-   */
-  public dispose(): void {
-    this.disposables.forEach((disposable) => disposable.dispose());
-    this.disposeSessionFeatures();
-    logger.info("Session manager disposed");
   }
 }

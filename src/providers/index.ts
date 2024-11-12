@@ -2,7 +2,6 @@ import { LOCATIONS } from "../constants";
 import { events } from "../events";
 import { ILocationName, IModelType } from "../interfaces";
 import { logger } from "../logger";
-import { statusIcon } from "../status-icon";
 import { storage } from "../storage";
 import { AnthropicChatModelProvider } from "./anthropic";
 import {
@@ -44,6 +43,8 @@ export type IModelProvider<T extends IModelType = IModelType> = InstanceType<
   Extract<(typeof ModelProviders)[number], { providerType: T }>
 >;
 
+export class Test123 {}
+
 /**
  * Manages model providers for different locations.
  * Implements the Singleton pattern to ensure a single instance across the application.
@@ -53,10 +54,10 @@ export class ModelProviderManager {
     new Map();
   private static instance: ModelProviderManager;
 
-  private constructor() {
+  private constructor(extensionContext = storage.getContext()) {
     // Check for changes in the lastProviderUpdatedAt secret to re-initialize providers
-    storage().context.subscriptions.push(
-      events().event(async (event) => {
+    extensionContext.subscriptions.push(
+      events.onFire(async (event) => {
         logger.debug(`Event Action Started: ${event.name}`);
         if (event.name === "modelProvidersUpdated") {
           logger.info("Re-initializing model providers");
@@ -110,7 +111,7 @@ export class ModelProviderManager {
           this.modelProviders.delete(location.name);
 
           // Get usage preference for the location
-          const usagePreference = storage().usage.get(location.name);
+          const usagePreference = storage.usage.get(location.name);
 
           if (!usagePreference) {
             return logger.info(
@@ -135,11 +136,6 @@ export class ModelProviderManager {
           logger.info(
             `Provider updated successfully for location: ${location.name}`,
           );
-
-          // Update the status bar icon
-          if (location.name === "Inline Completion") {
-            statusIcon().updateStatusBarIcon();
-          }
         } catch (error) {
           logger.error(error as Error);
           logger.notifyError("Error updating model provider configuration");

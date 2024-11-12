@@ -11,22 +11,20 @@ import { storage } from "../storage";
  * CommitMessageCommand class manages the commit message generation functionality.
  * It implements the Singleton pattern to ensure a single instance across the application.
  */
-export class CommitMessageCommand extends vscode.Disposable {
+export class CommitMessageCommand {
   private static instance: CommitMessageCommand;
-  private readonly disposable: vscode.Disposable;
 
   /**
    * Private constructor to prevent direct instantiation.
    * Registers the command and initializes the disposable.
    */
-  private constructor() {
-    // Call the parent constructor
-    super(() => this.disposable.dispose());
-
+  private constructor(extensionContext = storage.getContext()) {
     // Register the command
-    this.disposable = vscode.commands.registerCommand(
-      "flexpilot.git.generateCommitMessage",
-      this.handler.bind(this),
+    extensionContext.subscriptions.push(
+      vscode.commands.registerCommand(
+        "flexpilot.git.generateCommitMessage",
+        this.handler.bind(this),
+      ),
     );
     logger.info("CommitMessageCommand instance created");
   }
@@ -38,7 +36,6 @@ export class CommitMessageCommand extends vscode.Disposable {
   public static register() {
     if (!CommitMessageCommand.instance) {
       CommitMessageCommand.instance = new CommitMessageCommand();
-      storage().context.subscriptions.push(CommitMessageCommand.instance);
       logger.debug("New CommitMessageCommand instance created");
     }
   }
@@ -107,7 +104,7 @@ export class CommitMessageCommand extends vscode.Disposable {
             messages: messages,
             abortSignal: abortController.signal,
             stopSequences: [],
-            temperature: storage().workspace.get<number>(
+            temperature: storage.workspace.get<number>(
               "flexpilot.gitCommitMessage.temperature",
             ),
           });

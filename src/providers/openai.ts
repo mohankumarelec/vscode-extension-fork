@@ -162,7 +162,7 @@ export class OpenAICompletionModelProvider extends ICompletionModelProvider {
     logger.info(
       `Initializing OpenAICompletionModelProvider with nickname: ${nickname}`,
     );
-    const config = storage().models.get<IOpenAICompletionModelConfig>(nickname);
+    const config = storage.models.get<IOpenAICompletionModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -208,7 +208,7 @@ export class OpenAICompletionModelProvider extends ICompletionModelProvider {
     logger.info(`Configuring OpenAI model with nickname: ${nickname}`);
 
     // Load existing configuration
-    const config = storage().models.get<IOpenAICompletionModelConfig>(nickname);
+    const config = storage.models.get<IOpenAICompletionModelConfig>(nickname);
 
     // Prompt user for OpenAI API key
     const apiKey = await getApiKeyInput(config?.apiKey);
@@ -309,7 +309,7 @@ export class OpenAICompletionModelProvider extends ICompletionModelProvider {
 
     // Save the model configuration
     logger.info(`Saving model configuration for: ${nickname}`);
-    await storage().models.set<IOpenAICompletionModelConfig>(nickname, {
+    await storage.models.set<IOpenAICompletionModelConfig>(nickname, {
       contextWindow: metadata.contextWindow,
       organization: organization,
       project: project,
@@ -374,7 +374,7 @@ export class OpenAIChatModelProvider extends IChatModelProvider {
     logger.debug(
       `Initializing OpenAIChatModelProvider with nickname: ${nickname}`,
     );
-    const config = storage().models.get<IOpenAIChatModelConfig>(nickname);
+    const config = storage.models.get<IOpenAIChatModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -391,7 +391,7 @@ export class OpenAIChatModelProvider extends IChatModelProvider {
   static readonly configure = async (nickname: string): Promise<void> => {
     logger.info(`Configuring OpenAI chat model with nickname: ${nickname}`);
 
-    const config = storage().models.get<IOpenAIChatModelConfig>(nickname);
+    const config = storage.models.get<IOpenAIChatModelConfig>(nickname);
 
     // Prompt user for OpenAI API key
     const apiKey = await getApiKeyInput(config?.apiKey);
@@ -498,7 +498,7 @@ export class OpenAIChatModelProvider extends IChatModelProvider {
 
     // Save the model configuration
     logger.info(`Saving model configuration for: ${nickname}`);
-    await storage().models.set<IOpenAIChatModelConfig>(nickname, {
+    await storage.models.set<IOpenAIChatModelConfig>(nickname, {
       organization: organization,
       project: project,
       baseUrl: baseUrl,

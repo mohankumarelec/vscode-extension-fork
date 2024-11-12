@@ -39,7 +39,7 @@ export class AnthropicChatModelProvider extends IChatModelProvider {
     logger.debug(
       `Initializing AnthropicChatModelProvider with nickname: ${nickname}`,
     );
-    const config = storage().models.get<IAnthropicChatModelConfig>(nickname);
+    const config = storage.models.get<IAnthropicChatModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -55,7 +55,7 @@ export class AnthropicChatModelProvider extends IChatModelProvider {
   static readonly configure = async (nickname: string): Promise<void> => {
     logger.info(`Configuring Anthropic model with nickname: ${nickname}`);
 
-    const config = storage().models.get<IAnthropicChatModelConfig>(nickname);
+    const config = storage.models.get<IAnthropicChatModelConfig>(nickname);
 
     // Prompt user for API key
     let apiKey = await vscode.window.showInputBox({
@@ -128,7 +128,7 @@ export class AnthropicChatModelProvider extends IChatModelProvider {
 
     // Save the selected model configuration
     logger.debug(`Saving model configuration for ${nickname}`);
-    await storage().models.set<IAnthropicChatModelConfig>(nickname, {
+    await storage.models.set<IAnthropicChatModelConfig>(nickname, {
       baseUrl: baseUrl,
       apiKey: apiKey,
       model: model,

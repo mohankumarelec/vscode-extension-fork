@@ -22,38 +22,35 @@ type IWorkspaceConfigKeys =
  * StorageManager class provides a centralized state management mechanism for the extension.
  * It implements the Singleton pattern to ensure a single instance of the state across the application.
  */
-export class StorageManager {
-  public readonly context: vscode.ExtensionContext;
-  private static instance: StorageManager;
+class StorageManager {
   private githubSession: vscode.AuthenticationSession | undefined;
+  private context: vscode.ExtensionContext | undefined;
 
   /**
    * Creates a new instance of StorageManager.
    * @param {vscode.ExtensionContext} extensionContext - The extension context provided by VS Code
    */
-  private constructor(extensionContext: vscode.ExtensionContext) {
-    this.context = extensionContext;
+  constructor() {
     logger.info("StorageManager instance created");
   }
 
   /**
-   * Creates a new instance of StorageManager.
+   * Sets the extension context for the storage manager.
    * @param {vscode.ExtensionContext} extensionContext - The extension context provided by VS Code
    */
-  public static createInstance(extensionContext: vscode.ExtensionContext) {
-    if (!StorageManager.instance) {
-      StorageManager.instance = new StorageManager(extensionContext);
-    }
+  public setContext(extensionContext: vscode.ExtensionContext) {
+    this.context = extensionContext;
   }
 
   /**
-   * Returns the singleton instance of StorageManager.
+   * Retrieves the extension context
+   * @returns {vscode.ExtensionContext} The extension context provided by VS Code or undefined
    */
-  public static getInstance(): StorageManager {
-    if (!StorageManager.instance) {
-      throw logger.notifyError("storage accessed before activation");
+  public getContext(): vscode.ExtensionContext {
+    if (!this.context) {
+      throw new Error("Storage manager not initialized");
     }
-    return StorageManager.instance;
+    return this.context;
   }
 
   /**
@@ -62,6 +59,9 @@ export class StorageManager {
   public get = <T1 extends keyof IKeyValueStore>(
     key: T1,
   ): IKeyValueStore[T1] | undefined => {
+    if (!this.context) {
+      throw new Error("Storage manager not initialized");
+    }
     logger.debug(`Getting global state for key: ${key}`);
     return this.context.globalState.get(key);
   };
@@ -73,6 +73,9 @@ export class StorageManager {
     key: T1,
     value: IKeyValueStore[T1] | undefined,
   ): Promise<void> => {
+    if (!this.context) {
+      throw new Error("Storage manager not initialized");
+    }
     logger.debug(`Setting global state for key: ${key}`);
     return this.context.globalState.update(key, value);
   };
@@ -101,6 +104,9 @@ export class StorageManager {
      * Retrieves a value from model providers.
      */
     get: <T extends IModelConfig>(key: string): T | undefined => {
+      if (!this.context) {
+        throw new Error("Storage manager not initialized");
+      }
       const storageKey = `model.providers.${key}`;
       logger.debug(`Getting model config for key: ${storageKey}`);
       return this.context.globalState.get<T>(storageKey);
@@ -110,6 +116,9 @@ export class StorageManager {
      * Sets a value in model providers.
      */
     set: async <T extends IModelConfig>(key: string, value?: T) => {
+      if (!this.context) {
+        throw new Error("Storage manager not initialized");
+      }
       const storageKey = `model.providers.${key}`;
       logger.debug(`Setting model config for key: ${storageKey}`);
       return this.context.globalState.update(storageKey, value);
@@ -119,6 +128,9 @@ export class StorageManager {
      * Lists all the model providers.
      */
     list: (): string[] => {
+      if (!this.context) {
+        throw new Error("Storage manager not initialized");
+      }
       logger.debug(`Listing global state for key: model.providers`);
       return this.context.globalState
         .keys()
@@ -132,6 +144,9 @@ export class StorageManager {
      * Retrieves a value from usage preferences.
      */
     get: (key: ILocationName): IUsagePreference | undefined => {
+      if (!this.context) {
+        throw new Error("Storage manager not initialized");
+      }
       const storageKey = `usage.preferences.${key}`;
       logger.debug(`Getting usage preference for key: ${storageKey}`);
       return this.context.globalState.get<IUsagePreference>(storageKey);
@@ -144,6 +159,9 @@ export class StorageManager {
       key: ILocationName,
       value: T | undefined,
     ) => {
+      if (!this.context) {
+        throw new Error("Storage manager not initialized");
+      }
       const storageKey = `usage.preferences.${key}`;
       logger.debug(`Setting usage preference for key: ${storageKey}`);
       return this.context.globalState.update(storageKey, value);
@@ -172,4 +190,4 @@ export class StorageManager {
 }
 
 // Export the storage manager instance
-export const storage = () => StorageManager.getInstance();
+export const storage = new StorageManager();

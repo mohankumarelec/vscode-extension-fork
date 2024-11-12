@@ -15,22 +15,20 @@ interface ICustomQuickPickItem extends vscode.QuickPickItem {
  * StatusIconMenuCommand class manages the status icon menu functionality.
  * It implements the Singleton pattern to ensure a single instance across the application.
  */
-export class StatusIconMenuCommand extends vscode.Disposable {
+export class StatusIconMenuCommand {
   private static instance: StatusIconMenuCommand;
-  private readonly disposable: vscode.Disposable;
 
   /**
    * Private constructor to prevent direct instantiation.
    * Registers the command and initializes the disposable.
    */
-  private constructor() {
-    // Call the parent constructor
-    super(() => this.disposable.dispose());
-
+  private constructor(extensionContext = storage.getContext()) {
     // Register the command
-    this.disposable = vscode.commands.registerCommand(
-      "flexpilot.status.icon.menu",
-      this.handler.bind(this),
+    extensionContext.subscriptions.push(
+      vscode.commands.registerCommand(
+        "flexpilot.status.icon.menu",
+        this.handler.bind(this),
+      ),
     );
     logger.info("StatusIconMenuCommand instance created");
   }
@@ -42,7 +40,6 @@ export class StatusIconMenuCommand extends vscode.Disposable {
   public static register() {
     if (!StatusIconMenuCommand.instance) {
       StatusIconMenuCommand.instance = new StatusIconMenuCommand();
-      storage().context.subscriptions.push(StatusIconMenuCommand.instance);
       logger.debug("New StatusIconMenuCommand instance created");
     }
   }
@@ -103,12 +100,12 @@ export class StatusIconMenuCommand extends vscode.Disposable {
    * @returns {ICustomQuickPickItem} The status menu item.
    */
   private createStatusMenuItem(): ICustomQuickPickItem {
-    if (!storage().usage.get("Inline Completion")) {
+    if (!storage.usage.get("Inline Completion")) {
       return {
         label: "$(flexpilot-default) Status: Inline Completion Not Configured",
       };
     }
-    return statusIcon().state === "disabled"
+    return statusIcon.state === "disabled"
       ? { label: "$(flexpilot-default) Status: Disabled" }
       : { label: "$(flexpilot-default) Status: Ready" };
   }
@@ -163,7 +160,7 @@ export class StatusIconMenuCommand extends vscode.Disposable {
   private getLanguageSpecificMenuItem(
     activeTextEditor: vscode.TextEditor,
   ): ICustomQuickPickItem {
-    const config = storage().get("completions.disabled.languages") || [];
+    const config = storage.get("completions.disabled.languages") || [];
     const languageId = activeTextEditor.document.languageId;
     const isDisabled = config.includes(languageId);
 
@@ -177,8 +174,8 @@ export class StatusIconMenuCommand extends vscode.Disposable {
         } else {
           config.push(languageId);
         }
-        await storage().set("completions.disabled.languages", config);
-        statusIcon().updateStatusBarIcon();
+        await storage.set("completions.disabled.languages", config);
+        statusIcon.updateStatusBarIcon();
       },
     };
   }

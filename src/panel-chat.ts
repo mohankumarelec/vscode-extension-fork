@@ -22,7 +22,7 @@ class PanelChatParticipant {
    */
   private constructor() {
     // Get the GitHub session
-    this.githubSession = storage().session.get();
+    this.githubSession = storage.session.get();
 
     // Create the chat participant
     this.chatParticipant = vscode.chat.createChatParticipant(
@@ -158,7 +158,7 @@ class PanelChatParticipant {
         messages: messages,
         abortSignal: abortController.signal,
         stopSequences: [],
-        temperature: storage().workspace.get<number>(
+        temperature: storage.workspace.get<number>(
           "flexpilot.panelChat.temperature",
         ),
       });
@@ -173,7 +173,7 @@ class PanelChatParticipant {
       }
 
       // Check if token usage is enabled and show usage
-      if (storage().workspace.get("flexpilot.panelChat.showTokenUsage")) {
+      if (storage.workspace.get("flexpilot.panelChat.showTokenUsage")) {
         const usage = await stream.usage;
         if (usage.completionTokens && usage.promptTokens) {
           response.warning(
@@ -285,7 +285,7 @@ class PanelChatParticipant {
         messages: messages,
         abortSignal: abortController.signal,
         stopSequences: [],
-        temperature: storage().workspace.get<number>(
+        temperature: storage.workspace.get<number>(
           "flexpilot.chatTitle.temperature",
         ),
       });
@@ -350,7 +350,7 @@ class PanelChatParticipant {
         messages: messages,
         abortSignal: abortController.signal,
         stopSequences: [],
-        temperature: storage().workspace.get<number>(
+        temperature: storage.workspace.get<number>(
           "flexpilot.chatSuggestions.temperature",
         ),
       });

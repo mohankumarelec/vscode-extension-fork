@@ -49,7 +49,7 @@ export class GroqCloudChatModelProvider extends IChatModelProvider {
     logger.debug(
       `Initializing GroqCloudChatModelProvider with nickname: ${nickname}`,
     );
-    const config = storage().models.get<IGroqCloudChatModelConfig>(nickname);
+    const config = storage.models.get<IGroqCloudChatModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -65,7 +65,7 @@ export class GroqCloudChatModelProvider extends IChatModelProvider {
   static readonly configure = async (nickname: string): Promise<void> => {
     logger.info(`Configuring GroqCloud model with nickname: ${nickname}`);
 
-    const config = storage().models.get<IGroqCloudChatModelConfig>(nickname);
+    const config = storage.models.get<IGroqCloudChatModelConfig>(nickname);
 
     // Prompt user for API key
     let apiKey = await vscode.window.showInputBox({
@@ -163,7 +163,7 @@ export class GroqCloudChatModelProvider extends IChatModelProvider {
 
     // Save the selected model configuration
     logger.debug(`Saving model configuration for ${nickname}`);
-    await storage().models.set<IGroqCloudChatModelConfig>(nickname, {
+    await storage.models.set<IGroqCloudChatModelConfig>(nickname, {
       baseUrl: baseUrl,
       apiKey: apiKey,
       model: model.label,

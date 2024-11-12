@@ -109,7 +109,7 @@ export class MistralAICompletionModelProvider extends ICompletionModelProvider {
       `Initializing MistralAICompletionModelProvider with nickname: ${nickname}`,
     );
     const config =
-      storage().models.get<IMistralAICompletionModelConfig>(nickname);
+      storage.models.get<IMistralAICompletionModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -193,7 +193,7 @@ export class MistralAICompletionModelProvider extends ICompletionModelProvider {
       `Configuring Mistral AI completion model with nickname: ${nickname}`,
     );
     const config =
-      storage().models.get<IMistralAICompletionModelConfig>(nickname);
+      storage.models.get<IMistralAICompletionModelConfig>(nickname);
 
     // Prompt user for endpoint
     const endpoint = await getEndpointInput(config?.endpoint);
@@ -290,7 +290,7 @@ export class MistralAICompletionModelProvider extends ICompletionModelProvider {
     }
 
     // Save the model configuration
-    await storage().models.set<IMistralAICompletionModelConfig>(nickname, {
+    await storage.models.set<IMistralAICompletionModelConfig>(nickname, {
       endpoint: endpoint,
       apiKey: apiKey,
       model: model,
@@ -323,7 +323,7 @@ export class MistralAIChatModelProvider extends IChatModelProvider {
     logger.info(
       `Initializing MistralAIChatModelProvider with nickname: ${nickname}`,
     );
-    const config = storage().models.get<IMistralAIChatModelConfig>(nickname);
+    const config = storage.models.get<IMistralAIChatModelConfig>(nickname);
     if (!config) {
       throw new Error(`Model configuration not found for ${nickname}`);
     }
@@ -338,7 +338,7 @@ export class MistralAIChatModelProvider extends IChatModelProvider {
    */
   static readonly configure = async (nickname: string): Promise<void> => {
     logger.info(`Configuring Mistral AI chat model with nickname: ${nickname}`);
-    const config = storage().models.get<IMistralAIChatModelConfig>(nickname);
+    const config = storage.models.get<IMistralAIChatModelConfig>(nickname);
 
     // Prompt user for endpoint
     const endpoint = await getEndpointInput(config?.endpoint);
@@ -422,7 +422,7 @@ export class MistralAIChatModelProvider extends IChatModelProvider {
     );
 
     // Save the model configuration
-    await storage().models.set<IMistralAIChatModelConfig>(nickname, {
+    await storage.models.set<IMistralAIChatModelConfig>(nickname, {
       endpoint: endpoint,
       apiKey: apiKey,
       model: model,

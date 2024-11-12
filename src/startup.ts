@@ -82,13 +82,13 @@ const isGitHubCopilotActive = () => {
 const isPackageJsonOutdated = async () => {
   // Get the path of the package.json file
   const packageJsonUri = vscode.Uri.joinPath(
-    storage().context.extensionUri,
+    storage.getContext().extensionUri,
     "package.json",
   );
   logger.debug(`Package JSON Path: ${packageJsonUri}`);
 
   // Get the loaded package.json content
-  const loadedPackageJson = storage().context.extension.packageJSON;
+  const loadedPackageJson = storage.getContext().extension.packageJSON;
 
   // Check if the package.json file is outdated
   let isPackageJsonOutdated = false;
@@ -150,7 +150,7 @@ const isPackageJsonOutdated = async () => {
  */
 const isArgvJsonOutdated = async () => {
   // Get the path of the argv.json file from storage
-  let argvPath = storage().get("argv.path");
+  let argvPath = storage.get("argv.path");
   let argvJsonOutdated = false;
 
   // Check if the argv.json file is outdated and trigger the update
@@ -177,7 +177,7 @@ const isArgvJsonOutdated = async () => {
 
     // Set the argv path in storage
     argvPath = argvDocument.uri.toString();
-    await storage().set("argv.path", argvPath);
+    await storage.set("argv.path", argvPath);
 
     // Make the argv file active and close it
     await vscode.window.showTextDocument(argvDocument);
@@ -188,7 +188,7 @@ const isArgvJsonOutdated = async () => {
   const argvFileUri = vscode.Uri.parse(argvPath);
 
   // Get the extension ID
-  const extensionId = storage().context.extension.id;
+  const extensionId = storage.getContext().extension.id;
   logger.debug(`Extension ID: ${extensionId}`);
 
   // Parse the argv.json content

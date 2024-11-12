@@ -28,7 +28,7 @@ class InlineChatParticipant {
     );
 
     // Get the GitHub session
-    this.githubSession = storage().session.get();
+    this.githubSession = storage.session.get();
 
     // Set up requester information
     this.chatParticipant.requester = {
@@ -117,7 +117,7 @@ class InlineChatParticipant {
         messages: messages,
         abortSignal: abortController.signal,
         stopSequences: [codeBoundary.end],
-        temperature: storage().workspace.get<number>(
+        temperature: storage.workspace.get<number>(
           "flexpilot.inlineChat.temperature",
         ),
       });
@@ -181,7 +181,7 @@ class InlineChatParticipant {
       }
 
       // Check if token usage is enabled and show usage
-      if (storage().workspace.get("flexpilot.inlineChat.showTokenUsage")) {
+      if (storage.workspace.get("flexpilot.inlineChat.showTokenUsage")) {
         const usage = await stream.usage;
         if (usage.completionTokens && usage.promptTokens) {
           response.warning(

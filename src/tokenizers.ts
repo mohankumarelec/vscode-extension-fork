@@ -22,7 +22,7 @@ export class Tokenizers {
     }
 
     // Prepare the tokenizer file paths
-    const globalStorageUri = storage().context.globalStorageUri;
+    const globalStorageUri = storage.getContext().globalStorageUri;
     const fileId = createHash("sha512")
       .update(metadata.tokenizerUrl)
       .digest("hex");
