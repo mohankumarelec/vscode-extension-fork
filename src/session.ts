@@ -82,7 +82,7 @@ export class SessionManager extends vscode.Disposable {
       this.showGithubSupportNotification();
     }
     this.registerSessionFeatures();
-    await ModelProviderManager.getInstance().initProviders();
+    await ModelProviderManager.getInstance().updateProviders();
   }
 
   /**

@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { LOCATIONS, PROVIDER_TYPES } from "../constants";
+import { events } from "../events";
 import { ILocationName, IModelType } from "../interfaces";
 import { logger } from "../logger";
 import { ModelProviders } from "../providers";
@@ -285,7 +286,10 @@ export class ConfigureModelCommand extends vscode.Disposable {
       );
     }
     // Reinitialize the model providers
-    await storage().secrets.set("lastProviderUpdatedAt", Date.now().toString());
+    events.fire({
+      name: "modelProvidersUpdated",
+      payload: { updatedAt: Date.now().toString() },
+    });
   }
 
   /**
@@ -402,7 +406,10 @@ export class ConfigureModelCommand extends vscode.Disposable {
     }
 
     // Reinitialize the model providers
-    await storage().secrets.set("lastProviderUpdatedAt", Date.now().toString());
+    events.fire({
+      name: "modelProvidersUpdated",
+      payload: { updatedAt: Date.now().toString() },
+    });
 
     // Set the context to indicate successful configuration for walkthroughs
     await vscode.commands.executeCommand(
@@ -448,7 +455,10 @@ export class ConfigureModelCommand extends vscode.Disposable {
     }
 
     // Reinitialize the model providers
-    await storage().secrets.set("lastProviderUpdatedAt", Date.now().toString());
+    events.fire({
+      name: "modelProvidersUpdated",
+      payload: { updatedAt: Date.now().toString() },
+    });
     logger.notifyInfo(`Updated \`${nickname}\` configuration successfully`);
   }
 
@@ -482,10 +492,10 @@ export class ConfigureModelCommand extends vscode.Disposable {
         }
       }
       // Reinitialize the model providers
-      await storage().secrets.set(
-        "lastProviderUpdatedAt",
-        Date.now().toString(),
-      );
+      events.fire({
+        name: "modelProvidersUpdated",
+        payload: { updatedAt: Date.now().toString() },
+      });
       logger.notifyInfo(`Deleted model configuration: \`${nickname}\``);
     } else {
       logger.info(

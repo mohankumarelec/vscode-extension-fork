@@ -1,8 +1,9 @@
 import { LOCATIONS } from "../constants";
+import { events } from "../events";
 import { ILocationName, IModelType } from "../interfaces";
 import { logger } from "../logger";
 import { statusIcon } from "../status-icon";
-import { IAllowedSecrets, storage } from "../storage";
+import { storage } from "../storage";
 import { AnthropicChatModelProvider } from "./anthropic";
 import {
   AzureOpenAIChatModelProvider,
@@ -55,10 +56,11 @@ export class ModelProviderManager {
   private constructor() {
     // Check for changes in the lastProviderUpdatedAt secret to re-initialize providers
     storage().context.subscriptions.push(
-      storage().context.secrets.onDidChange((event) => {
-        if ((event.key as IAllowedSecrets) === "lastProviderUpdatedAt") {
-          this.initProviders();
+      events.event(async (event) => {
+        logger.debug(`Event received: ${event.name}`);
+        if (event.name === "modelProvidersUpdated") {
           logger.info("Re-initializing model providers");
+          this.updateProviders();
         }
       }),
     );
@@ -75,17 +77,6 @@ export class ModelProviderManager {
       logger.debug("New ModelProviderManager instance created");
     }
     return ModelProviderManager.instance;
-  }
-
-  /**
-   * Initializes providers for all locations.
-   */
-  public async initProviders(): Promise<void> {
-    logger.info("Initializing providers for all locations");
-    await Promise.all(
-      LOCATIONS.map((location) => this.updateProvider(location.name)),
-    );
-    logger.info("All providers initialized");
   }
 
   /**
@@ -106,56 +97,54 @@ export class ModelProviderManager {
   }
 
   /**
-   * Updates the provider for a specific location.
-   * @param locationName - The name of the location to update
+   * Updates the provider for all locations based on the usage preference.
    */
-  private async updateProvider(locationName: ILocationName): Promise<void> {
-    try {
-      logger.info(`Updating provider for location: ${locationName}`);
+  public async updateProviders(): Promise<void> {
+    logger.info("Initializing providers for all locations");
+    await Promise.all(
+      LOCATIONS.map(async (location) => {
+        try {
+          logger.info(`Updating provider for location: ${location.name}`);
 
-      // Delete the existing provider
-      this.modelProviders.delete(locationName);
+          // Delete the existing provider
+          this.modelProviders.delete(location.name);
 
-      // Get usage preference for the location
-      const usagePreference = storage().usage.get(locationName);
+          // Get usage preference for the location
+          const usagePreference = storage().usage.get(location.name);
 
-      if (!usagePreference) {
-        return logger.info(
-          `No usage preference found for location: ${locationName}`,
-        );
-      }
+          if (!usagePreference) {
+            return logger.info(
+              `No usage preference found for location: ${location.name}`,
+            );
+          }
 
-      // Find the location in the LOCATIONS array
-      const location = LOCATIONS.find((item) => item.name === locationName);
-      if (!location) {
-        return logger.info(`Location not found: ${locationName}`);
-      }
+          // Find the appropriate ModelProvider based on the usage preference
+          const ModelProvider = ModelProviders.find(
+            (item) => item.providerId === usagePreference.providerId,
+          );
+          if (!ModelProvider) {
+            return logger.info(
+              `No matching ModelProvider found for providerId: ${usagePreference.providerId}`,
+            );
+          }
 
-      // Find the appropriate ModelProvider based on the usage preference
-      const ModelProvider = ModelProviders.find(
-        (item) => item.providerId === usagePreference.providerId,
-      );
-      if (!ModelProvider) {
-        return logger.info(
-          `No matching ModelProvider found for providerId: ${usagePreference.providerId}`,
-        );
-      }
+          // Create and set the new provider
+          const modelProvider = new ModelProvider(usagePreference.nickname);
+          await modelProvider.initialize();
+          this.modelProviders.set(location.name, modelProvider);
+          logger.info(
+            `Provider updated successfully for location: ${location.name}`,
+          );
 
-      // Create and set the new provider
-      const modelProvider = new ModelProvider(usagePreference.nickname);
-      await modelProvider.initialize();
-      this.modelProviders.set(locationName, modelProvider);
-      logger.info(
-        `Provider updated successfully for location: ${locationName}`,
-      );
-
-      // Update the status bar icon
-      if (locationName === "Inline Completion") {
-        statusIcon().updateStatusBarIcon();
-      }
-    } catch (error) {
-      logger.error(error as Error);
-      logger.notifyError("Error updating model provider configuration");
-    }
+          // Update the status bar icon
+          if (location.name === "Inline Completion") {
+            statusIcon().updateStatusBarIcon();
+          }
+        } catch (error) {
+          logger.error(error as Error);
+          logger.notifyError("Error updating model provider configuration");
+        }
+      }),
+    );
   }
 }

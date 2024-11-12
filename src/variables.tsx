@@ -99,6 +99,7 @@ export class VariablesManager {
     }
 
     // Register the terminal command execution event listener
+    logger.debug("Registering terminal command execution event listener");
     storage().context.subscriptions.push(
       vscode.window.onDidExecuteTerminalCommand(
         (event: vscode.TerminalExecutedCommand) => {
