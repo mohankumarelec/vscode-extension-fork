@@ -35,11 +35,13 @@ export class EventsSingleton {
     extContext.subscriptions.push(
       extContext.secrets.onDidChange(async (event) => {
         if (event.key.startsWith(EVENT_KEY_PREFIX)) {
-          logger.debug(`Event emitted: ${event.key}`);
+          logger.debug(`Event received: ${event.key}`);
           const payload = await extContext.secrets.get(event.key);
           if (payload) {
-            logger.debug(`Event payload: ${payload}`);
+            logger.debug(`Event payload: ${JSON.stringify(payload)}`);
             this.eventEmitter.fire(JSON.parse(payload));
+          } else {
+            logger.debug(`Event payload empty, skipped firing`);
           }
         }
       }),
@@ -63,7 +65,9 @@ export class EventsSingleton {
    * @param {IEventPayload} event - The event to fire.
    */
   public async fire(event: IEventPayload) {
-    logger.debug(`Firing event: ${event.name} with payload: ${event.payload}`);
+    logger.debug(
+      `Firing event: ${event.name} with payload: ${JSON.stringify(event.payload)}`,
+    );
     await storage().context.secrets.store(
       `${EVENT_KEY_PREFIX}${event.name}`,
       JSON.stringify(event),

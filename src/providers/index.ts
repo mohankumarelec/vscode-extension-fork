@@ -57,7 +57,7 @@ export class ModelProviderManager {
     // Check for changes in the lastProviderUpdatedAt secret to re-initialize providers
     storage().context.subscriptions.push(
       events().event(async (event) => {
-        logger.debug(`Event received: ${event.name}`);
+        logger.debug(`Event Action Started: ${event.name}`);
         if (event.name === "modelProvidersUpdated") {
           logger.info("Re-initializing model providers");
           this.updateProviders();
