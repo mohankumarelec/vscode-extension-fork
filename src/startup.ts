@@ -40,9 +40,6 @@ const triggerVscodeRestart = async () => {
       existingValue === "native" ? "native" : "custom",
       vscode.ConfigurationTarget.Global,
     );
-
-  // Show a notification to restart VS Code
-  triggerVscodeRestart();
 };
 
 /**

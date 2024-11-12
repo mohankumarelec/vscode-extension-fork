@@ -2,7 +2,7 @@ import { LOCATIONS } from "../constants";
 import { ILocationName, IModelType } from "../interfaces";
 import { logger } from "../logger";
 import { statusIcon } from "../status-icon";
-import { storage } from "../storage";
+import { IAllowedSecrets, storage } from "../storage";
 import { AnthropicChatModelProvider } from "./anthropic";
 import {
   AzureOpenAIChatModelProvider,
@@ -53,6 +53,15 @@ export class ModelProviderManager {
   private static instance: ModelProviderManager;
 
   private constructor() {
+    // Check for changes in the lastProviderUpdatedAt secret to re-initialize providers
+    storage().context.subscriptions.push(
+      storage().context.secrets.onDidChange((event) => {
+        if ((event.key as IAllowedSecrets) === "lastProviderUpdatedAt") {
+          this.initProviders();
+          logger.info("Re-initializing model providers");
+        }
+      }),
+    );
     logger.info("ModelProviderManager instance created");
   }
 

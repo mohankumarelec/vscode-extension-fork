@@ -1,2 +1,9 @@
+#!/bin/sh
 npx lint-staged
+
+if git diff --cached --name-only | grep -qE "^(package\.json|package-lock\.json)$"; then
+  echo "Error: Changes to package.json or package-lock.json are not allowed."
+  exit 1
+fi
+
 echo "Completed Pre Commit Hooks ..."

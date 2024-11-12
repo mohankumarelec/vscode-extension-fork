@@ -12,7 +12,7 @@ interface IKeyValueStore {
   "argv.path": string;
 }
 
-type IAllowedSecrets = "lastProviderUpdatedAt";
+export type IAllowedSecrets = "lastProviderUpdatedAt";
 
 /**
  * IWorkspaceConfigKeys type to define the keys of workspace configuration.

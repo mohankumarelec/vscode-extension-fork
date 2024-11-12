@@ -13,7 +13,7 @@
         "${workspaceFolder}/launch_folder",
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
-        "--enable-proposed-api=flexpilot.flexpilot-vscode-extension"
+        "--enable-proposed-api=mohankumarramachandran.mohankumarramachandran-vscode-extension"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "env": {
