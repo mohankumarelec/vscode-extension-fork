@@ -2,11 +2,11 @@ import { CommitMessageCommand } from "./commands/commit-message";
 import { ConfigureModelCommand } from "./commands/configure-model";
 import { GithubSignInCommand } from "./commands/github-sign-in";
 import { StatusIconMenuCommand } from "./commands/status-icon-menu";
+import { events } from "./events";
 import { logger } from "./logger";
 import { ProxyModelProvider } from "./models";
 import { SessionManager } from "./session";
 import { updateRuntimeArguments } from "./startup";
-import { statusIcon } from "./status-icon";
 import { setContext } from "./utilities";
 import { VariablesManager } from "./variables";
 
@@ -38,7 +38,10 @@ export const activate = async () => {
     SessionManager.register();
 
     // Update the status bar icon
-    statusIcon.updateStatusBarIcon();
+    events.fire({
+      name: "inlineCompletionProviderUpdated",
+      payload: { updatedAt: Date.now() },
+    });
 
     // Set the loaded context
     setContext("isLoaded", true);

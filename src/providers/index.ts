@@ -107,6 +107,14 @@ export class ModelProviderManager {
         try {
           logger.info(`Updating provider for location: ${location.name}`);
 
+          // Trigger once before updating provider
+          if (location.name === "Inline Completion") {
+            events.fire({
+              name: "inlineCompletionProviderUpdated",
+              payload: { updatedAt: Date.now() },
+            });
+          }
+
           // Delete the existing provider
           this.modelProviders.delete(location.name);
 
@@ -136,6 +144,14 @@ export class ModelProviderManager {
           logger.info(
             `Provider updated successfully for location: ${location.name}`,
           );
+
+          // Trigger once after updating provider
+          if (location.name === "Inline Completion") {
+            events.fire({
+              name: "inlineCompletionProviderUpdated",
+              payload: { updatedAt: Date.now() },
+            });
+          }
         } catch (error) {
           logger.error(error as Error);
           logger.notifyError("Error updating model provider configuration");

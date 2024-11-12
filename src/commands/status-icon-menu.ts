@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { events } from "../events";
 import { logger } from "../logger";
 import { statusIcon } from "../status-icon";
 import { storage } from "../storage";
@@ -175,7 +176,10 @@ export class StatusIconMenuCommand {
           config.push(languageId);
         }
         await storage.set("completions.disabled.languages", config);
-        statusIcon.updateStatusBarIcon();
+        events.fire({
+          name: "inlineCompletionProviderUpdated",
+          payload: { updatedAt: Date.now() },
+        });
       },
     };
   }

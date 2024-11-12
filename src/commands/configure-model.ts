@@ -389,7 +389,7 @@ export class ConfigureModelCommand {
     );
 
     if (pickedLocations === undefined) {
-      logger.notifyError("Cancelled usage location selection");
+      logger.notifyWarn("Skipped preference selection for the model");
       return;
     }
 

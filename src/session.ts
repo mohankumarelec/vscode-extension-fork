@@ -52,6 +52,31 @@ export class SessionManager extends vscode.Disposable {
     }
   }
 
+  private async checkNewlyInstalled() {
+    const globalStorageUri = this.extensionContext.globalStorageUri;
+    const flagUri = vscode.Uri.joinPath(globalStorageUri, "installed_at");
+
+    // Check if the globalStorageUri folder exists in storage
+    try {
+      await vscode.workspace.fs.stat(globalStorageUri);
+    } catch (error) {
+      logger.warn(`Folder not found at: ${globalStorageUri}`);
+      logger.warn(String(error));
+      vscode.workspace.fs.createDirectory(globalStorageUri);
+    }
+
+    // Check if the flag URI file exists in storage
+    try {
+      await vscode.workspace.fs.stat(flagUri);
+      logger.debug(`Extension already installed, restoring state`);
+    } catch (error) {
+      logger.warn(String(error));
+      logger.debug("Extension newly installed, clearing state");
+      await this.clearGlobalState();
+      await vscode.workspace.fs.writeFile(flagUri, new Uint8Array(0));
+    }
+  }
+
   /**
    * Handles changes in authentication sessions.
    */
@@ -59,6 +84,7 @@ export class SessionManager extends vscode.Disposable {
     const session = await vscode.authentication.getSession("github", [
       "public_repo",
     ]);
+    await this.checkNewlyInstalled();
     storage.session.set(session);
     setContext("isLoggedIn", !!session);
     if (session) {

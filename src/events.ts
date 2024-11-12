@@ -6,7 +6,7 @@ import { storage } from "./storage";
  * IEventPayload represents the payload of an event.
  */
 interface IEventPayload {
-  name: "modelProvidersUpdated";
+  name: "modelProvidersUpdated" | "inlineCompletionProviderUpdated";
   payload: Record<string, unknown>;
 }
 

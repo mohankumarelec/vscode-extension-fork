@@ -3,7 +3,7 @@
   "name": "mohankumarramachandran-vscode-extension",
   "displayName": "Mohanram Fork Test",
   "description": "Open-Source, Native and a True GitHub Copilot Alternative for VS Code",
-  "version": "1.95.5",
+  "version": "1.95.6",
   "icon": "assets/logo.png",
   "license": "GPL-3.0-only",
   "pricing": "Free",

@@ -85,6 +85,22 @@ export class LoggerSingleton extends vscode.Disposable {
   }
 
   /**
+   * Logs an warning message and shows a notification.
+   */
+  public notifyWarn(message: string, ...args: unknown[]): void {
+    this.outputChannel.warn(message, ...args);
+
+    // Show warning notification
+    vscode.window
+      .showWarningMessage(message, "View Details")
+      .then((selection) => {
+        if (selection === "View Details") {
+          this.outputChannel.show();
+        }
+      });
+  }
+
+  /**
    * Logs a debug message to the output channel.
    */
   public debug(message: string, ...args: unknown[]): void {
