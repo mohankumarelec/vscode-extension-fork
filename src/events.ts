@@ -77,4 +77,4 @@ export class EventsSingleton {
 }
 
 // Export a singleton instance of the events
-export const events = EventsSingleton.getInstance();
+export const events = () => EventsSingleton.getInstance();

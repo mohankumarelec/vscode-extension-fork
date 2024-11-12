@@ -286,7 +286,7 @@ export class ConfigureModelCommand extends vscode.Disposable {
       );
     }
     // Reinitialize the model providers
-    events.fire({
+    events().fire({
       name: "modelProvidersUpdated",
       payload: { updatedAt: Date.now().toString() },
     });
@@ -406,7 +406,7 @@ export class ConfigureModelCommand extends vscode.Disposable {
     }
 
     // Reinitialize the model providers
-    events.fire({
+    events().fire({
       name: "modelProvidersUpdated",
       payload: { updatedAt: Date.now().toString() },
     });
@@ -455,7 +455,7 @@ export class ConfigureModelCommand extends vscode.Disposable {
     }
 
     // Reinitialize the model providers
-    events.fire({
+    events().fire({
       name: "modelProvidersUpdated",
       payload: { updatedAt: Date.now().toString() },
     });
@@ -492,7 +492,7 @@ export class ConfigureModelCommand extends vscode.Disposable {
         }
       }
       // Reinitialize the model providers
-      events.fire({
+      events().fire({
         name: "modelProvidersUpdated",
         payload: { updatedAt: Date.now().toString() },
       });
